@@ -164,6 +164,21 @@ class PronounsGeneratorDataset(ComplexGenerator):
         df = pd.DataFrame(eval)
         df.to_csv('eval/eval.csv', sep=';', index=False)
 
+    def set_eval_and_train(self, train_data, eval_data):
+        df_train = pd.read_csv(train_data, sep=';')
+        set_train = set(df_train['in'].to_list())
+
+        df_eval = pd.read_csv(eval_data, sep=';')
+        df_eval = df_eval.rename(columns={'0': 'cmd'})
+        set_eval = set(df_eval['cmd'].to_list())
+
+        intersec = list(set_train & set_eval)
+
+        print(intersec)
+
+        df_eval_drop_train = df_eval.query(f"cmd not in {intersec}").reset_index(drop=True)
+        df_eval_drop_train.to_csv('eval/eval_drop_train.csv', sep=';', index=False)
+
 
 if __name__ == '__main__':
     pgen = PronounsGeneratorDataset()
@@ -171,3 +186,5 @@ if __name__ == '__main__':
     # pgen.gen_pronouns_with_single_object(patience=2e4)
     # pgen.gen_object_and_pronouns(patience=2e4)
     pgen.gen_eval_dataset()
+    # pgen.set_eval_and_train('data/pronouns_to_object_v3.csv', 'eval/eval.csv')
+    # pgen.set_eval_and_train('data/pronouns_to_object_v3.csv', 'eval/eval_drop_train.csv')
