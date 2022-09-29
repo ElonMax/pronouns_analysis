@@ -139,6 +139,7 @@ class PronounsGeneratorDataset(ComplexGenerator):
         uniq_dataset.to_csv('data/pronouns_to_object_v3.csv', sep=';', index=False)
 
     def gen_eval_dataset(self, patience=1e3):
+        eval = []
         for _ in range(int(patience)):
             action = random.choice(self.actions_for_pronouns)
             cmd = self.dist[action](patience=1, pattern=action, save=False, n=0)
@@ -149,7 +150,19 @@ class PronounsGeneratorDataset(ComplexGenerator):
             pronoun = complex_with_pronouns.split(' ')[-1]
             obj = cmd['cased']
 
-            print(complex_with_pronouns, obj, pronoun, sep=' | ')
+            eval.append(complex_with_pronouns)
+
+            obj_pos = complex_with_pronouns.find(obj)
+            obj_len = len(obj)
+            pronoun_pos = complex_with_pronouns.find(pronoun)
+            pronoun_len = len(pronoun)
+
+            with open(f'true_keys/cmd_{_}.txt', 'w') as file:
+                file.write(f'1 {obj_pos} {obj_len} 1\n')
+                file.write(f'2 {pronoun_pos} {pronoun_len} 1')
+
+        df = pd.DataFrame(eval)
+        df.to_csv('eval/eval.csv', sep=';', index=False)
 
 
 if __name__ == '__main__':
