@@ -1,0 +1,9 @@
+sentencepiece==0.1.97
+transformers==4.18.0
+torch==1.10.0
+rich[jupyter]==12.5.1
+pymorphy2==0.9.1
+rdflib==6.2.0
+pandas
+ipykernel
+tensorboard
