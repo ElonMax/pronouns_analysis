@@ -1,3 +1,5 @@
+Python 3.7
+
 Ядро для ipykernel
 
 ```python -m ipykernel install --user --name pa --display-name "Python 3.7 (pa)"```
