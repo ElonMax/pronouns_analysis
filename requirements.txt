@@ -7,3 +7,6 @@ rdflib==6.2.0
 pandas
 ipykernel
 tensorboard
+pyhocon
+wandb
+nltk
