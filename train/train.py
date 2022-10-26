@@ -94,7 +94,7 @@ def validate(epoch, tokenizer, model, device, loader):
             generated_ids = model.generate(
                 input_ids=ids,
                 attention_mask=mask,
-                max_length=24,
+                max_length=48,
                 num_beams=2,
                 repetition_penalty=2.5,
                 length_penalty=1.0,
@@ -103,12 +103,12 @@ def validate(epoch, tokenizer, model, device, loader):
             preds = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=True) for g in generated_ids]
             target = [tokenizer.decode(t, skip_special_tokens=True, clean_up_tokenization_spaces=True)for t in y]
 
-            reference = [target]
-            candidate = preds
+            reference = [target[0].split(" ")]
+            candidate = preds[0].split(" ")
             score = sentence_bleu(reference, candidate, weights=[1])
             wandb.log({"BLEU/eval": score}, step=step)
 
-            if step % 10 == 0:
+            if step % 100 == 0:
                 log.info("Completed: {}".format(step))
 
             bleu.append(score)
