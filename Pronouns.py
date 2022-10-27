@@ -61,7 +61,7 @@ class PronounsGeneratorDataset(ComplexGenerator):
 
         return ' '.join([cmd['previous_with_sep'], cmd['text_verb'], to])
 
-    def gen_pronouns_with_object(self, patience=1e3):
+    def gen_pronouns_with_object(self, path, patience=1e3):
         input_ = []
         output_ = []
         for n in range(int(patience)):
@@ -81,7 +81,7 @@ class PronounsGeneratorDataset(ComplexGenerator):
         })
 
         uniq_dataset = dataset.drop_duplicates().reset_index(drop=True)
-        uniq_dataset.to_csv('data/pronouns_to_object_v1.csv', sep=';', index=False)
+        uniq_dataset.to_csv(path, sep=';', index=False)
 
     def gen_pronouns_with_single_object(self, patience=1e3):
         input_ = []
@@ -139,18 +139,21 @@ class PronounsGeneratorDataset(ComplexGenerator):
         uniq_dataset.to_csv('data/pronouns_to_object_v3.csv', sep=';', index=False)
 
     def gen_eval_dataset(self, patience=1e3):
-        eval = []
+        eval_in = []
+        eval_out = []
         for _ in range(int(patience)):
             action = random.choice(self.actions_for_pronouns)
             cmd = self.dist[action](patience=1, pattern=action, save=False, n=0)
 
             prop_of_cmd = self.prep_gen_command_verb(cmd)
+            complex_with_nouns = self.prep_gen_command_object(prop_of_cmd)
             complex_with_pronouns = self.prep_gen_command_pronoun(prop_of_cmd)
 
             pronoun = complex_with_pronouns.split(' ')[-1]
             obj = cmd['cased']
 
-            eval.append(complex_with_pronouns)
+            eval_in.append(complex_with_pronouns)
+            eval_out.append(complex_with_nouns)
 
             obj_pos = complex_with_pronouns.find(obj)
             obj_len = len(obj)
@@ -161,8 +164,11 @@ class PronounsGeneratorDataset(ComplexGenerator):
                 file.write(f'1 {obj_pos} {obj_len} 1\n')
                 file.write(f'2 {pronoun_pos} {pronoun_len} 1')
 
-        df = pd.DataFrame(eval)
-        df.to_csv('eval/eval.csv', sep=';', index=False)
+        df = pd.DataFrame({
+            'in': eval_in,
+            'out': eval_out
+        })
+        df.to_csv('eval/eval_b.csv', sep=';', index=False)
 
     def set_eval_and_train(self, train_data, eval_data):
         df_train = pd.read_csv(train_data, sep=';')
@@ -182,7 +188,7 @@ class PronounsGeneratorDataset(ComplexGenerator):
 
 if __name__ == '__main__':
     pgen = PronounsGeneratorDataset()
-    # pgen.gen_pronouns_with_object(patience=2e4)
+    # pgen.gen_pronouns_with_object(path='../coreference_utils/data/eval/eval_b.csv', patience=1e3)
     # pgen.gen_pronouns_with_single_object(patience=2e4)
     # pgen.gen_object_and_pronouns(patience=2e4)
     pgen.gen_eval_dataset()
